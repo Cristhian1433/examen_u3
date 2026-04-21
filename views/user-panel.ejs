@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Usuario - Sistema de Autenticación</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Panel de Usuario</h1>
+      <p>Bienvenido, <%= user.nombre %> (<%= user.rol %>)</p>
+    </header>
+
+    <nav class="navbar">
+      <ul>
+        <li><a href="/user/panel" class="nav-link">Mi Panel</a></li>
+        <li><a href="/auth/logout" class="nav-link nav-logout">Cerrar Sesión</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <section class="user-overview">
+        <h2>Mi Información</h2>
+
+        <div class="user-card">
+          <p><strong>Nombre:</strong> <%= user.nombre %></p>
+          <p><strong>Correo:</strong> <%= user.correo %></p>
+          <p><strong>Rol:</strong> <%= user.rol %></p>
+          <p><strong>ID de Usuario:</strong> <%= user.id %></p>
+        </div>
+
+        <section class="session-info">
+          <h3>Información de tu Sesión Actual</h3>
+          <% if (sessionInfo) { %>
+            <div class="session-card">
+              <p><strong>Session ID:</strong> <code><%= sessionInfo.session_id %></code></p>
+              <p><strong>IP Origen:</strong> <%= sessionInfo.ip_origen %></p>
+              <p><strong>User Agent:</strong> <%= sessionInfo.user_agent %></p>
+              <p><strong>Activa:</strong> <%= sessionInfo.activa ? 'Sí' : 'No' %></p>
+              <p><strong>Creada en:</strong> <%= new Date(sessionInfo.creada_en).toLocaleString() %></p>
+            </div>
+          <% } else { %>
+            <p>No se pudo obtener la información de sesión.</p>
+          <% } %>
+        </section>
+
+        <section class="security-info">
+          <h3>Seguridad de tu Sesión</h3>
+          <p>Tu sesión está protegida por:</p>
+          <ul>
+            <li>✓ Cookie httpOnly (no accesible desde JavaScript)</li>
+            <li>✓ Cookie sameSite strict (protegida contra CSRF)</li>
+            <li>✓ Cookie secure en HTTPS (en producción)</li>
+            <li>✓ Expiración: 24 horas</li>
+            <li>✓ Regeneración en cada login</li>
+          </ul>
+        </section>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Administrador - Sistema de Autenticación</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Panel de Administrador</h1>
+      <p>Bienvenido, <%= user.nombre %> (<%= user.rol %>)</p>
+    </header>
+
+    <nav class="navbar">
+      <ul>
+        <li><a href="/admin/panel" class="nav-link">Inicio</a></li>
+        <li><a href="/admin/accesos-correctos" class="nav-link">Accesos Correctos</a></li>
+        <li><a href="/admin/accesos-fallidos" class="nav-link">Accesos Fallidos</a></li>
+        <li><a href="/admin/cierres-sesion" class="nav-link">Cierres de Sesión</a></li>
+        <li><a href="/admin/reporte" class="nav-link">Reporte Auditoría</a></li>
+        <li><a href="/auth/logout" class="nav-link nav-logout">Cerrar Sesión</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <% if (typeof activeTab === 'undefined' || activeTab === undefined) { %>
+        <section class="admin-overview">
+          <h2>Bienvenido al Panel de Administración</h2>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <h3>Mi Información</h3>
+              <p><strong>Nombre:</strong> <%= user.nombre %></p>
+              <p><strong>Correo:</strong> <%= user.correo %></p>
+              <p><strong>Rol:</strong> <%= user.rol %></p>
+            </div>
+
+            <div class="stat-card">
+              <h3>Información de Sesión</h3>
+              <p><strong>ID Sesión:</strong> <code><%= sessionID %></code></p>
+              <p><small>Esta sesión está protegida por cookie httpOnly y sameSite.</small></p>
+            </div>
+          </div>
+
+          <section class="info-admin">
+            <h3>Acceso a Bitácoras</h3>
+            <p>Como administrador, puedes acceder a las tres bitácoras principales:</p>
+            <ul>
+              <li><strong>Accesos Correctos:</strong> Registra todos los inicios de sesión exitosos</li>
+              <li><strong>Accesos Fallidos:</strong> Registra intentos de login inválidos</li>
+              <li><strong>Cierres de Sesión:</strong> Registra todos los cierres de sesión</li>
+            </ul>
+          </section>
+        </section>
+      <% } else { %>
+        <section class="logs-section">
+          <% if (activeTab === 'accesos-correctos') { %>
+            <h2>Bitácora de Accesos Correctos</h2>
+            <% if (logs && logs.length > 0) { %>
+              <table class="logs-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Correo</th>
+                    <th>Rol</th>
+                    <th>Session ID</th>
+                    <th>IP Origen</th>
+                    <th>User Agent</th>
+                    <th>Fecha</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% logs.forEach(log => { %>
+                    <tr>
+                      <td><%= log.id %></td>
+                      <td><%= log.correo %></td>
+                      <td><%= log.rol %></td>
+                      <td><code><%= log.session_id %></code></td>
+                      <td><%= log.ip_origen %></td>
+                      <td><small><%= log.user_agent.substring(0, 50) %>...</small></td>
+                      <td><%= new Date(log.fecha).toLocaleString() %></td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            <% } else { %>
+              <p>No hay registros de accesos correctos.</p>
+            <% } %>
+          <% } else if (activeTab === 'accesos-fallidos') { %>
+            <h2>Bitácora de Accesos Fallidos</h2>
+            <% if (logs && logs.length > 0) { %>
+              <table class="logs-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Correo Intentado</th>
+                    <th>Motivo</th>
+                    <th>IP Origen</th>
+                    <th>User Agent</th>
+                    <th>Fecha</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% logs.forEach(log => { %>
+                    <tr>
+                      <td><%= log.id %></td>
+                      <td><%= log.correo_intentado %></td>
+                      <td><%= log.motivo %></td>
+                      <td><%= log.ip_origen %></td>
+                      <td><small><%= log.user_agent.substring(0, 50) %>...</small></td>
+                      <td><%= new Date(log.fecha).toLocaleString() %></td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            <% } else { %>
+              <p>No hay registros de accesos fallidos.</p>
+            <% } %>
+          <% } else if (activeTab === 'cierres-sesion') { %>
+            <h2>Bitácora de Cierres de Sesión</h2>
+            <% if (logs && logs.length > 0) { %>
+              <table class="logs-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Correo</th>
+                    <th>Rol</th>
+                    <th>Session ID</th>
+                    <th>IP Origen</th>
+                    <th>User Agent</th>
+                    <th>Fecha</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% logs.forEach(log => { %>
+                    <tr>
+                      <td><%= log.id %></td>
+                      <td><%= log.correo %></td>
+                      <td><%= log.rol %></td>
+                      <td><code><%= log.session_id %></code></td>
+                      <td><%= log.ip_origen %></td>
+                      <td><small><%= log.user_agent.substring(0, 50) %>...</small></td>
+                      <td><%= new Date(log.fecha).toLocaleString() %></td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            <% } else { %>
+              <p>No hay registros de cierres de sesión.</p>
+            <% } %>
+          <% } %>
+        </section>
+      <% } %>
+    </main>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reporte de Auditoría - Sistema de Autenticación</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .role-admin {
+      background: #dc3545;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+    }
+    .role-user {
+      background: #007bff;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+    }
+    .badge-count {
+      background: #007bff;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .motivo-fallo {
+      background: #fff3cd;
+      color: #856404;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Reporte de Auditoría</h1>
+      <p>Generado: <%= new Date().toLocaleString('es-ES') %></p>
+    </header>
+
+    <nav class="navbar">
+      <ul>
+        <li><a href="/admin/panel" class="nav-link">Panel Admin</a></li>
+        <li><a href="/admin/accesos-correctos" class="nav-link">Accesos Correctos</a></li>
+        <li><a href="/admin/accesos-fallidos" class="nav-link">Accesos Fallidos</a></li>
+        <li><a href="/admin/cierres-sesion" class="nav-link">Cierres de Sesión</a></li>
+        <li><a href="/admin/reporte" class="nav-link">Reporte de auditoria</a></li>
+        <li><a href="/auth/logout" class="nav-link nav-logout">Cerrar Sesión</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <section class="admin-overview">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2>Resumen Estadístico</h2>
+          <a href="/admin/reporte/pdf" class="btn-download-pdf" style="background: #28a745; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; display: inline-block;">Descargar PDF</a>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Total de Eventos</h3>
+            <p style="font-size: 28px; font-weight: bold; color: white;"><%= stats.totalEventos %></p>
+            <p><small>Accesos y cierres de sesión combinados</small></p>
+          </div>
+
+          <div class="stat-card">
+            <h3>Accesos Exitosos</h3>
+            <p style="font-size: 28px; font-weight: bold; color: white;"><%= stats.totalAccessos %></p>
+            <p><small>Inicios de sesión correctos</small></p>
+          </div>
+
+          <div class="stat-card">
+            <h3>Accesos Fallidos</h3>
+            <p style="font-size: 28px; font-weight: bold; color: white;"><%= stats.totalFallidos %></p>
+            <p><small>Intentos de acceso inválidos</small></p>
+          </div>
+
+          <div class="stat-card">
+            <h3>Cierres de Sesión</h3>
+            <p style="font-size: 28px; font-weight: bold; color: white;"><%= stats.totalCierres %></p>
+            <p><small>Sesiones cerradas correctamente</small></p>
+          </div>
+        </div>
+
+        <section class="info-admin">
+          <h3>Tasa de Éxito en Autenticación</h3>
+          <% const tasaExito = stats.totalAccessos + stats.totalFallidos > 0 
+            ? ((stats.totalAccessos / (stats.totalAccessos + stats.totalFallidos)) * 100).toFixed(2)
+            : 0;
+          %>
+          <p><strong><%= tasaExito %>%</strong> de intentos de login fueron exitosos (<%= stats.totalAccessos %> de <%= stats.totalAccessos + stats.totalFallidos %>)</p>
+        </section>
+      </section>
+
+      <section class="logs-section">
+        <h2>Top 10 Usuarios Más Activos</h2>
+        <% if (topUsers.length > 0) { %>
+          <table class="logs-table">
+            <thead>
+              <tr>
+                <th>Posición</th>
+                <th>Correo</th>
+                <th>Total de Accesos</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% topUsers.forEach((user, idx) => { %>
+                <tr>
+                  <td><strong>#<%= idx + 1 %></strong></td>
+                  <td><%= user.correo %></td>
+                  <td><span class="badge-count"><%= user.accesos %></span></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <p>No hay datos disponibles</p>
+        <% } %>
+      </section>
+
+      <section class="logs-section">
+        <h2>Bitácora de Accesos Correctos</h2>
+        <% if (recentAccessLogs.length > 0) { %>
+          <table class="logs-table">
+            <thead>
+              <tr>
+                <th>Fecha y Hora</th>
+                <th>Correo</th>
+                <th>Rol</th>
+                <th>IP Origen</th>
+                <th>Navegador</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% recentAccessLogs.forEach(log => { %>
+                <tr>
+                  <td><%= new Date(log.fecha).toLocaleString('es-ES') %></td>
+                  <td><%= log.correo %></td>
+                  <td><span class="<%= log.rol === 'admin' ? 'role-admin' : 'role-user' %>"><%= log.rol %></span></td>
+                  <td><code><%= log.ip_origen %></code></td>
+                  <td><small><%= log.user_agent.substring(0, 40) %>...</small></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <p>No hay registros de accesos correctos.</p>
+        <% } %>
+      </section>
+
+      <section class="logs-section">
+        <h2>Bitácora de Accesos Fallidos</h2>
+        <% if (recentFailedLogs.length > 0) { %>
+          <table class="logs-table">
+            <thead>
+              <tr>
+                <th>Fecha y Hora</th>
+                <th>Correo Intento</th>
+                <th>Motivo del Fallo</th>
+                <th>IP Origen</th>
+                <th>Navegador</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% recentFailedLogs.forEach(log => { %>
+                <tr>
+                  <td><%= new Date(log.fecha).toLocaleString('es-ES') %></td>
+                  <td><%= log.correo %></td>
+                  <td><span class="motivo-fallo"><%= log.motivo %></span></td>
+                  <td><code><%= log.ip_origen %></code></td>
+                  <td><small><%= log.user_agent.substring(0, 40) %>...</small></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <p>No hay registros de accesos fallidos.</p>
+        <% } %>
+      </section>
+
+      <section class="logs-section">
+        <h2>Bitácora de Cierres de Sesión</h2>
+        <% if (recentLogoutLogs.length > 0) { %>
+          <table class="logs-table">
+            <thead>
+              <tr>
+                <th>Fecha y Hora</th>
+                <th>Correo</th>
+                <th>Rol</th>
+                <th>IP Origen</th>
+                <th>Navegador</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% recentLogoutLogs.forEach(log => { %>
+                <tr>
+                  <td><%= new Date(log.fecha).toLocaleString('es-ES') %></td>
+                  <td><%= log.correo %></td>
+                  <td><span class="<%= log.rol === 'admin' ? 'role-admin' : 'role-user' %>"><%= log.rol %></span></td>
+                  <td><code><%= log.ip_origen %></code></td>
+                  <td><small><%= log.user_agent.substring(0, 40) %>...</small></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <p>No hay registros de cierres de sesión.</p>
+        <% } %>
+      </section>
+  </div>
+</body>
+</html>

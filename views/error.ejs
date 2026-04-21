@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error - Sistema de Autenticación</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="auth-container">
+    <div class="error-content">
+      <h1><%= error.status || 500 %></h1>
+      <h2>¡Oops! Algo salió mal</h2>
+      <p><%= message %></p>
+
+      <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+        <a href="/" class="btn btn-primary" style="max-width: 200px;">Ir a Inicio</a>
+        <a href="/auth/login" class="btn btn-secondary" style="max-width: 200px; background: white; border: 2px solid #ccc;">Iniciar Sesión</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
