@@ -1,6 +1,7 @@
 function isAuthenticated(req, res, next) {
   console.log('[AUTH MIDDLEWARE] Verificando autenticación');
-  console.log('[AUTH MIDDLEWARE] req.session:', req.session);
+  console.log('[AUTH MIDDLEWARE] req.sessionID:', req.sessionID);
+  console.log('[AUTH MIDDLEWARE] req.session COMPLETO:', JSON.stringify(req.session, null, 2));
   console.log('[AUTH MIDDLEWARE] req.session.user:', req.session?.user);
   
   if (req.session && req.session.user) {

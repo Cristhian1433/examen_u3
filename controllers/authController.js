@@ -145,6 +145,8 @@ exports.login = async (req, res) => {
       };
 
       console.log('[LOGIN] Datos de usuario asignados');
+      console.log('[LOGIN] req.session COMPLETO ANTES DE GUARDAR:', JSON.stringify(req.session, null, 2));
+      console.log('[LOGIN] req.sessionID:', req.sessionID);
 
       // Guardar sesión EXPLÍCITAMENTE antes de cualquier operación
       req.session.save((saveErr) => {
@@ -156,6 +158,7 @@ exports.login = async (req, res) => {
         }
 
         console.log('[LOGIN] Sesión guardada en express-session');
+        console.log('[LOGIN] req.session COMPLETO DESPUÉS DE GUARDAR:', JSON.stringify(req.session, null, 2));
 
         // Guardar en tabla de sesiones activas
         const sessionId = req.sessionID;
