@@ -144,7 +144,10 @@
                   <td><%= log.correo %></td>
                   <td><span class="<%= log.rol === 'admin' ? 'role-admin' : 'role-user' %>"><%= log.rol %></span></td>
                   <td><code><%= log.ip_origen %></code></td>
-                  <td><small><%= log.user_agent.substring(0, 40) %>...</small></td>
+                  <td>
+                    <strong><%= log.clientInfo.label %></strong><br>
+                    <small><%= log.clientInfo.raw.substring(0, 60) %><%= log.clientInfo.raw.length > 60 ? '...' : '' %></small>
+                  </td>
                 </tr>
               <% }); %>
             </tbody>
@@ -174,7 +177,10 @@
                   <td><%= log.correo %></td>
                   <td><span class="motivo-fallo"><%= log.motivo %></span></td>
                   <td><code><%= log.ip_origen %></code></td>
-                  <td><small><%= log.user_agent.substring(0, 40) %>...</small></td>
+                  <td>
+                    <strong><%= log.clientInfo.label %></strong><br>
+                    <small><%= log.clientInfo.raw.substring(0, 60) %><%= log.clientInfo.raw.length > 60 ? '...' : '' %></small>
+                  </td>
                 </tr>
               <% }); %>
             </tbody>
@@ -204,7 +210,10 @@
                   <td><%= log.correo %></td>
                   <td><span class="<%= log.rol === 'admin' ? 'role-admin' : 'role-user' %>"><%= log.rol %></span></td>
                   <td><code><%= log.ip_origen %></code></td>
-                  <td><small><%= log.user_agent.substring(0, 40) %>...</small></td>
+                  <td>
+                    <strong><%= log.clientInfo.label %></strong><br>
+                    <small><%= log.clientInfo.raw.substring(0, 60) %><%= log.clientInfo.raw.length > 60 ? '...' : '' %></small>
+                  </td>
                 </tr>
               <% }); %>
             </tbody>

@@ -67,7 +67,7 @@
                     <th>Rol</th>
                     <th>Session ID</th>
                     <th>IP Origen</th>
-                    <th>User Agent</th>
+                    <th>Navegador</th>
                     <th>Fecha</th>
                   </tr>
                 </thead>
@@ -79,7 +79,10 @@
                       <td><%= log.rol %></td>
                       <td><code><%= log.session_id %></code></td>
                       <td><%= log.ip_origen %></td>
-                      <td><small><%= log.user_agent.substring(0, 50) %>...</small></td>
+                      <td>
+                        <strong><%= log.clientInfo.label %></strong><br>
+                        <small><%= log.clientInfo.raw.substring(0, 70) %><%= log.clientInfo.raw.length > 70 ? '...' : '' %></small>
+                      </td>
                       <td><%= new Date(log.fecha).toLocaleString() %></td>
                     </tr>
                   <% }); %>
@@ -98,7 +101,7 @@
                     <th>Correo Intentado</th>
                     <th>Motivo</th>
                     <th>IP Origen</th>
-                    <th>User Agent</th>
+                    <th>Navegador</th>
                     <th>Fecha</th>
                   </tr>
                 </thead>
@@ -109,7 +112,10 @@
                       <td><%= log.correo_intentado %></td>
                       <td><%= log.motivo %></td>
                       <td><%= log.ip_origen %></td>
-                      <td><small><%= log.user_agent.substring(0, 50) %>...</small></td>
+                      <td>
+                        <strong><%= log.clientInfo.label %></strong><br>
+                        <small><%= log.clientInfo.raw.substring(0, 70) %><%= log.clientInfo.raw.length > 70 ? '...' : '' %></small>
+                      </td>
                       <td><%= new Date(log.fecha).toLocaleString() %></td>
                     </tr>
                   <% }); %>
@@ -129,7 +135,7 @@
                     <th>Rol</th>
                     <th>Session ID</th>
                     <th>IP Origen</th>
-                    <th>User Agent</th>
+                    <th>Navegador</th>
                     <th>Fecha</th>
                   </tr>
                 </thead>
@@ -141,7 +147,10 @@
                       <td><%= log.rol %></td>
                       <td><code><%= log.session_id %></code></td>
                       <td><%= log.ip_origen %></td>
-                      <td><small><%= log.user_agent.substring(0, 50) %>...</small></td>
+                      <td>
+                        <strong><%= log.clientInfo.label %></strong><br>
+                        <small><%= log.clientInfo.raw.substring(0, 70) %><%= log.clientInfo.raw.length > 70 ? '...' : '' %></small>
+                      </td>
                       <td><%= new Date(log.fecha).toLocaleString() %></td>
                     </tr>
                   <% }); %>

@@ -37,7 +37,8 @@
             <div class="session-card">
               <p><strong>Session ID:</strong> <code><%= sessionInfo.session_id %></code></p>
               <p><strong>IP Origen:</strong> <%= sessionInfo.ip_origen %></p>
-              <p><strong>User Agent:</strong> <%= sessionInfo.user_agent %></p>
+              <p><strong>Navegador:</strong> <%= sessionInfo.clientInfo.label %></p>
+              <p><strong>User Agent:</strong> <%= sessionInfo.clientInfo.raw %></p>
               <p><strong>Activa:</strong> <%= sessionInfo.activa ? 'Sí' : 'No' %></p>
               <p><strong>Creada en:</strong> <%= new Date(sessionInfo.creada_en).toLocaleString() %></p>
             </div>

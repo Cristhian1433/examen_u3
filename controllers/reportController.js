@@ -2,6 +2,14 @@ const pool = require('../db');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+const { describeClient } = require('../utils/browserInfo');
+
+function mapLogsWithClientInfo(logs = []) {
+  return logs.map((log) => ({
+    ...log,
+    clientInfo: describeClient(log.user_agent),
+  }));
+}
 
 exports.getAuditReport = async (req, res) => {
   try {
@@ -37,17 +45,17 @@ exports.getAuditReport = async (req, res) => {
     const recentAccessLogsResult = await pool.query(
       'SELECT * FROM access_logs ORDER BY fecha DESC LIMIT 20'
     );
-    const recentAccessLogs = recentAccessLogsResult.rows;
+    const recentAccessLogs = mapLogsWithClientInfo(recentAccessLogsResult.rows);
 
     const recentFailedLogsResult = await pool.query(
       'SELECT * FROM failed_access_logs ORDER BY fecha DESC LIMIT 20'
     );
-    const recentFailedLogs = recentFailedLogsResult.rows;
+    const recentFailedLogs = mapLogsWithClientInfo(recentFailedLogsResult.rows);
 
     const recentLogoutLogsResult = await pool.query(
       'SELECT * FROM logout_logs ORDER BY fecha DESC LIMIT 20'
     );
-    const recentLogoutLogs = recentLogoutLogsResult.rows;
+    const recentLogoutLogs = mapLogsWithClientInfo(recentLogoutLogsResult.rows);
 
     res.render('audit-report', {
       user: req.session.user,

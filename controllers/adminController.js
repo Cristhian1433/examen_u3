@@ -1,4 +1,12 @@
 const pool = require('../db');
+const { describeClient } = require('../utils/browserInfo');
+
+function mapLogsWithClientInfo(logs = []) {
+  return logs.map((log) => ({
+    ...log,
+    clientInfo: describeClient(log.user_agent),
+  }));
+}
 
 exports.getPanel = async (req, res) => {
   try {
@@ -22,7 +30,7 @@ exports.getAccessLogs = async (req, res) => {
     const result = await pool.query(
       'SELECT * FROM access_logs ORDER BY fecha DESC LIMIT 100'
     );
-    const logs = result.rows;
+    const logs = mapLogsWithClientInfo(result.rows);
 
     res.render('admin-panel', {
       user: req.session.user,
@@ -44,7 +52,7 @@ exports.getFailedAccessLogs = async (req, res) => {
     const result = await pool.query(
       'SELECT * FROM failed_access_logs ORDER BY fecha DESC LIMIT 100'
     );
-    const logs = result.rows;
+    const logs = mapLogsWithClientInfo(result.rows);
 
     res.render('admin-panel', {
       user: req.session.user,
@@ -66,7 +74,7 @@ exports.getLogoutLogs = async (req, res) => {
     const result = await pool.query(
       'SELECT * FROM logout_logs ORDER BY fecha DESC LIMIT 100'
     );
-    const logs = result.rows;
+    const logs = mapLogsWithClientInfo(result.rows);
 
     res.render('admin-panel', {
       user: req.session.user,

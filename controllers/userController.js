@@ -1,4 +1,5 @@
 const pool = require('../db');
+const { describeClient } = require('../utils/browserInfo');
 
 exports.getPanel = async (req, res) => {
   try {
@@ -11,7 +12,12 @@ exports.getPanel = async (req, res) => {
       [sessionId]
     );
 
-    const sessionInfo = sessionResult.rows[0] || null;
+    const sessionInfo = sessionResult.rows[0]
+      ? {
+          ...sessionResult.rows[0],
+          clientInfo: describeClient(sessionResult.rows[0].user_agent),
+        }
+      : null;
 
     res.render('user-panel', {
       user,
