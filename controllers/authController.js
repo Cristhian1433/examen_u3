@@ -123,73 +123,63 @@ exports.login = async (req, res) => {
       });
     }
 
-    console.log('[LOGIN] Contraseña correcta, regenerando sesión');
-    // Regenerar sesión
-    req.session.regenerate(async (err) => {
+    console.log('[LOGIN] Contraseña correcta, creando sesión');
+
+    // Crear sesión (sin regenerate, usamos directamente)
+    req.session.user = {
+      id: user.id,
+      nombre: user.nombre,
+      correo: user.correo,
+      rol: user.rol,
+    };
+
+    console.log('[LOGIN] Datos de usuario asignados a sesión:', req.session.user);
+
+    // Guardar en tabla de sesiones activas
+    const sessionId = req.sessionID;
+    try {
+      await pool.query(
+        'INSERT INTO active_sessions (usuario_id, session_id, ip_origen, user_agent, activa) VALUES ($1, $2, $3, $4, $5)',
+        [user.id, sessionId, clientIp, userAgent, true]
+      );
+      console.log('[LOGIN] Sesión activa guardada en BD');
+    } catch (err) {
+      console.error('[LOGIN] Error al guardar sesión activa:', err);
+    }
+
+    console.log('[LOGIN] Registrando acceso correcto');
+    // Registrar acceso correcto
+    await logger.logSuccessfulAccess(
+      user.id,
+      correo,
+      user.rol,
+      sessionId,
+      clientIp,
+      userAgent
+    );
+
+    console.log('[LOGIN] Guardando sesión en BD');
+    // Guardar la sesión en BD ANTES de redirigir
+    req.session.save((err) => {
       if (err) {
-        console.error('[LOGIN] Error al regenerar sesión:', err);
+        console.error('[LOGIN] Error fatal al guardar sesión:', err);
         return res.render('login', {
           error: 'Error al crear sesión. Intenta de nuevo.',
         });
       }
 
-      console.log('[LOGIN] Sesión regenerada');
-      // Guardar datos en sesión
-      req.session.user = {
-        id: user.id,
-        nombre: user.nombre,
-        correo: user.correo,
-        rol: user.rol,
-      };
+      console.log('[LOGIN] Sesión guardada en BD correctamente');
+      console.log('[LOGIN] Session ID:', sessionId);
+      console.log('[LOGIN] Redirigiendo a rol:', user.rol);
 
-      console.log('[LOGIN] Guardando sesión activa');
-      // Guardar en tabla de sesiones activas
-      const sessionId = req.sessionID;
-      try {
-        await pool.query(
-          'INSERT INTO active_sessions (usuario_id, session_id, ip_origen, user_agent, activa) VALUES ($1, $2, $3, $4, $5)',
-          [user.id, sessionId, clientIp, userAgent, true]
-        );
-        console.log('[LOGIN] Sesión activa guardada');
-      } catch (err) {
-        console.error('[LOGIN] Error al guardar sesión activa:', err);
+      // Redirigir según rol
+      if (user.rol === 'admin') {
+        res.redirect('/admin/panel');
+      } else {
+        res.redirect('/user/panel');
       }
-
-      console.log('[LOGIN] Registrando acceso correcto');
-      // Registrar acceso correcto
-      await logger.logSuccessfulAccess(
-        user.id,
-        correo,
-        user.rol,
-        sessionId,
-        clientIp,
-        userAgent
-      );
-
-      console.log('[LOGIN] Guardando sesión en BD');
-      // IMPORTANTE: Guardar sesión en BD antes de redirigir
-      req.session.save((saveErr) => {
-        if (saveErr) {
-          console.error('[LOGIN] Error al guardar sesión en BD:', saveErr);
-          return res.render('login', {
-            error: 'Error al crear sesión. Intenta de nuevo.',
-          });
-        }
-
-        console.log('[LOGIN] Sesión guardada exitosamente');
-        console.log('[LOGIN] Session ID:', req.sessionID);
-        console.log('[LOGIN] Session data:', req.session);
-        console.log('[LOGIN] Redirigiendo usuario rol:', user.rol);
-        // Redirigir según rol
-        if (user.rol === 'admin') {
-          console.log('[LOGIN] Enviando redirect a /admin/panel');
-          res.redirect('/admin/panel');
-        } else {
-          console.log('[LOGIN] Enviando redirect a /user/panel');
-          res.redirect('/user/panel');
-        }
-      });
     });
+
   } catch (error) {
     console.error('[LOGIN] Error en login:', error);
     res.render('login', {
