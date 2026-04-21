@@ -64,6 +64,10 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
+    console.log('[LOGIN] ========== INICIO LOGIN ==========');
+    console.log('[LOGIN] req.body:', JSON.stringify(req.body));
+    console.log('[LOGIN] Content-Type:', req.get('Content-Type'));
+    
     const { correo, contraseña } = req.body;
     const clientIp = req.ip || req.connection.remoteAddress;
     const userAgent = req.get('user-agent') || 'unknown';

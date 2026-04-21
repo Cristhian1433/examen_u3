@@ -44,29 +44,39 @@
           const correo = document.getElementById('correo').value;
           const contraseña = document.getElementById('contraseña').value;
           
+          console.log('[CLIENT] Iniciando login con:', { correo });
+          
           try {
+            const body = { correo, contraseña };
+            console.log('[CLIENT] Enviando JSON:', JSON.stringify(body));
+            
             const response = await fetch('/auth/login', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ correo, contraseña }),
+              body: JSON.stringify(body),
               credentials: 'include', // Importante: enviar cookies
             });
             
+            console.log('[CLIENT] Response status:', response.status);
+            
             const data = await response.json();
+            console.log('[CLIENT] Response JSON:', data);
             
             if (data.success) {
+              console.log('[CLIENT] Login exitoso, redirigiendo a:', data.redirect);
               // La cookie ya fue recibida y procesada
               // Ahora es seguro hacer el redirect
               window.location.href = data.redirect;
             } else {
               // Mostrar error
+              console.error('[CLIENT] Error en login:', data.error);
               alert(data.error || 'Error en el login');
             }
           } catch (error) {
-            console.error('Error:', error);
-            alert('Error al conectar con el servidor');
+            console.error('[CLIENT] Exception:', error);
+            alert('Error al conectar con el servidor: ' + error.message);
           }
         });
       </script>
