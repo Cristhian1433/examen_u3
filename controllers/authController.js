@@ -176,11 +176,16 @@ exports.login = async (req, res) => {
           });
         }
 
+        console.log('[LOGIN] Sesión guardada exitosamente');
+        console.log('[LOGIN] Session ID:', req.sessionID);
+        console.log('[LOGIN] Session data:', req.session);
         console.log('[LOGIN] Redirigiendo usuario rol:', user.rol);
         // Redirigir según rol
         if (user.rol === 'admin') {
+          console.log('[LOGIN] Enviando redirect a /admin/panel');
           res.redirect('/admin/panel');
         } else {
+          console.log('[LOGIN] Enviando redirect a /user/panel');
           res.redirect('/user/panel');
         }
       });
