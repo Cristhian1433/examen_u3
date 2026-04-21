@@ -125,7 +125,7 @@ exports.login = async (req, res) => {
 
     console.log('[LOGIN] Contraseña correcta, creando sesión');
 
-    // Crear sesión (sin regenerate, usamos directamente)
+    // Crear sesión
     req.session.user = {
       id: user.id,
       nombre: user.nombre,
@@ -134,6 +134,10 @@ exports.login = async (req, res) => {
     };
 
     console.log('[LOGIN] Datos de usuario asignados a sesión:', req.session.user);
+    
+    // Tocar la sesión para marcarla como modificada
+    req.session.touch();
+    console.log('[LOGIN] Sesión marcada como modificada');
 
     // Guardar en tabla de sesiones activas
     const sessionId = req.sessionID;
