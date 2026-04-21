@@ -166,13 +166,24 @@ exports.login = async (req, res) => {
         userAgent
       );
 
-      console.log('[LOGIN] Redirigiendo usuario rol:', user.rol);
-      // Redirigir según rol
-      if (user.rol === 'admin') {
-        res.redirect('/admin/panel');
-      } else {
-        res.redirect('/user/panel');
-      }
+      console.log('[LOGIN] Guardando sesión en BD');
+      // IMPORTANTE: Guardar sesión en BD antes de redirigir
+      req.session.save((saveErr) => {
+        if (saveErr) {
+          console.error('[LOGIN] Error al guardar sesión en BD:', saveErr);
+          return res.render('login', {
+            error: 'Error al crear sesión. Intenta de nuevo.',
+          });
+        }
+
+        console.log('[LOGIN] Redirigiendo usuario rol:', user.rol);
+        // Redirigir según rol
+        if (user.rol === 'admin') {
+          res.redirect('/admin/panel');
+        } else {
+          res.redirect('/user/panel');
+        }
+      });
     });
   } catch (error) {
     console.error('[LOGIN] Error en login:', error);
