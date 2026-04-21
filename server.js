@@ -38,10 +38,11 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+  name: 'sessionId', // Nombre explícito de la cookie
   cookie: {
     secure: process.env.NODE_ENV === 'production', // HTTPS en producción
     httpOnly: true,
-    sameSite: 'strict',
+    sameSite: 'lax', // Cambié de 'strict' a 'lax' para permitir cookies en redirects
     maxAge: 1000 * 60 * 60 * 24, // 24 horas
   },
 }));
