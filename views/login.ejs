@@ -23,7 +23,7 @@
         </div>
       <% } %>
 
-      <form method="POST" action="/auth/login" class="form">
+      <form id="loginForm" class="form">
         <div class="form-group input-with-icon">
           <span class="input-icon">👤</span>
           <input type="email" id="correo" name="correo" placeholder="Correo Electrónico" required>
@@ -36,6 +36,40 @@
 
         <button type="submit" class="btn btn-primary">LOGIN</button>
       </form>
+
+      <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const correo = document.getElementById('correo').value;
+          const contraseña = document.getElementById('contraseña').value;
+          
+          try {
+            const response = await fetch('/auth/login', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ correo, contraseña }),
+              credentials: 'include', // Importante: enviar cookies
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+              // La cookie ya fue recibida y procesada
+              // Ahora es seguro hacer el redirect
+              window.location.href = data.redirect;
+            } else {
+              // Mostrar error
+              alert(data.error || 'Error en el login');
+            }
+          } catch (error) {
+            console.error('Error:', error);
+            alert('Error al conectar con el servidor');
+          }
+        });
+      </script>
 
       <div class="auth-footer">
         ¿No tienes cuenta? <a href="/auth/register">Regístrate aquí</a>

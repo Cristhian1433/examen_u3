@@ -152,7 +152,8 @@ exports.login = async (req, res) => {
       req.session.save((saveErr) => {
         if (saveErr) {
           console.error('[LOGIN] Error al guardar sesión:', saveErr);
-          return res.render('login', {
+          return res.status(500).json({
+            success: false,
             error: 'Error al crear sesión. Intenta de nuevo.',
           });
         }
@@ -183,19 +184,22 @@ exports.login = async (req, res) => {
             userAgent
           );
 
-          console.log('[LOGIN] Redirigiendo a rol:', user.rol);
-          if (user.rol === 'admin') {
-            res.redirect('/admin/panel');
-          } else {
-            res.redirect('/user/panel');
-          }
+          console.log('[LOGIN] Respondiendo con JSON para que cliente maneje el redirect');
+          // Devolver JSON con la ruta a la que redirigir
+          // El cliente hará el redirect con JavaScript DESPUÉS de recibir la cookie
+          res.json({
+            success: true,
+            redirect: user.rol === 'admin' ? '/admin/panel' : '/user/panel',
+            message: `Bienvenido ${user.nombre}`,
+          });
         })();
       });
     });
 
   } catch (error) {
     console.error('[LOGIN] Error en login:', error);
-    res.render('login', {
+    res.status(500).json({
+      success: false,
       error: 'Error al iniciar sesión. Intenta de nuevo.',
     });
   }
