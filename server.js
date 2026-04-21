@@ -13,6 +13,10 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Permite que Express reconozca el HTTPS real cuando la app
+// esta detras del proxy de Render.
+app.set('trust proxy', 1);
+
 // Middlewares de seguridad
 app.use(helmet());
 
@@ -29,7 +33,7 @@ app.use(express.json());
 
 // Sesiones
 const sessionStore = new pgSession({
-  pool: pool,
+  pool,
   tableName: 'session',
 });
 
@@ -38,12 +42,13 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  name: 'sessionId', // Nombre explícito de la cookie
+  proxy: process.env.NODE_ENV === 'production',
+  name: 'sessionId',
   cookie: {
-    secure: process.env.NODE_ENV === 'production', // HTTPS en producción
+    secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    sameSite: 'lax', // Cambié de 'strict' a 'lax' para permitir cookies en redirects
-    maxAge: 1000 * 60 * 60 * 24, // 24 horas
+    sameSite: 'lax',
+    maxAge: 1000 * 60 * 60 * 24,
   },
 }));
 
@@ -65,7 +70,7 @@ app.use('/user', userRoutes);
 // Ruta 404
 app.use((req, res) => {
   res.status(404).render('error', {
-    message: 'Página no encontrada',
+    message: 'Pagina no encontrada',
     error: { status: 404 },
   });
 });

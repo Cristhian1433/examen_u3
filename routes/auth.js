@@ -13,7 +13,10 @@ router.post('/register', isNotAuthenticated, authController.register);
 
 // GET login
 router.get('/login', isNotAuthenticated, (req, res) => {
-  res.render('login', { error: null });
+  res.render('login', {
+    error: null,
+    registered: req.query.registered === 'true',
+  });
 });
 
 // POST login

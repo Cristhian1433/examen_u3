@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Iniciar Sesión - Sistema de Autenticación</title>
+  <title>Iniciar Sesion - Sistema de Autenticacion</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -17,16 +17,16 @@
         </div>
       <% } %>
 
-      <% if (typeof registered !== 'undefined' && registered) { %>
+      <% if (registered) { %>
         <div class="alert alert-success">
-          Registro exitoso. Ahora inicia sesión con tus credenciales.
+          Registro exitoso. Ahora inicia sesion con tus credenciales.
         </div>
       <% } %>
 
-      <form id="loginForm" class="form">
+      <form method="POST" action="/auth/login" class="form">
         <div class="form-group input-with-icon">
           <span class="input-icon">👤</span>
-          <input type="email" id="correo" name="correo" placeholder="Correo Electrónico" required>
+          <input type="email" id="correo" name="correo" placeholder="Correo Electronico" required>
         </div>
 
         <div class="form-group input-with-icon">
@@ -37,52 +37,8 @@
         <button type="submit" class="btn btn-primary">LOGIN</button>
       </form>
 
-      <script>
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-          e.preventDefault();
-          
-          const correo = document.getElementById('correo').value;
-          const contraseña = document.getElementById('contraseña').value;
-          
-          console.log('[CLIENT] Iniciando login con:', { correo });
-          
-          try {
-            const body = { correo, contraseña };
-            console.log('[CLIENT] Enviando JSON:', JSON.stringify(body));
-            
-            const response = await fetch('/auth/login', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(body),
-              credentials: 'include', // Importante: enviar cookies
-            });
-            
-            console.log('[CLIENT] Response status:', response.status);
-            
-            const data = await response.json();
-            console.log('[CLIENT] Response JSON:', data);
-            
-            if (data.success) {
-              console.log('[CLIENT] Login exitoso, redirigiendo a:', data.redirect);
-              // La cookie ya fue recibida y procesada
-              // Ahora es seguro hacer el redirect
-              window.location.href = data.redirect;
-            } else {
-              // Mostrar error
-              console.error('[CLIENT] Error en login:', data.error);
-              alert(data.error || 'Error en el login');
-            }
-          } catch (error) {
-            console.error('[CLIENT] Exception:', error);
-            alert('Error al conectar con el servidor: ' + error.message);
-          }
-        });
-      </script>
-
       <div class="auth-footer">
-        ¿No tienes cuenta? <a href="/auth/register">Regístrate aquí</a>
+        ¿No tienes cuenta? <a href="/auth/register">Registrate aqui</a>
       </div>
     </div>
   </div>

@@ -7,7 +7,6 @@ exports.register = async (req, res) => {
   try {
     const { nombre, correo, contraseña, rol } = req.body;
 
-    // Validaciones
     if (!nombre || !correo || !contraseña || !rol) {
       return res.render('register', {
         error: 'Todos los campos son requeridos.',
@@ -16,7 +15,7 @@ exports.register = async (req, res) => {
 
     if (!validator.isEmail(correo)) {
       return res.render('register', {
-        error: 'El correo no es válido.',
+        error: 'El correo no es valido.',
       });
     }
 
@@ -28,11 +27,10 @@ exports.register = async (req, res) => {
 
     if (!['user', 'admin'].includes(rol)) {
       return res.render('register', {
-        error: 'El rol seleccionado no es válido.',
+        error: 'El rol seleccionado no es valido.',
       });
     }
 
-    // Verificar si el correo ya existe
     const userExists = await pool.query(
       'SELECT id FROM users WHERE correo = $1',
       [correo]
@@ -40,15 +38,13 @@ exports.register = async (req, res) => {
 
     if (userExists.rows.length > 0) {
       return res.render('register', {
-        error: 'El correo ya está registrado.',
+        error: 'El correo ya esta registrado.',
       });
     }
 
-    // Hash de contraseña
     const hashedPassword = await bcrypt.hash(contraseña, 10);
 
-    // Insertar usuario
-    const result = await pool.query(
+    await pool.query(
       'INSERT INTO users (nombre, correo, contrasena_hash, rol) VALUES ($1, $2, $3, $4)',
       [nombre, correo, hashedPassword, rol]
     );
@@ -67,80 +63,72 @@ exports.login = async (req, res) => {
     console.log('[LOGIN] ========== INICIO LOGIN ==========');
     console.log('[LOGIN] req.body:', JSON.stringify(req.body));
     console.log('[LOGIN] Content-Type:', req.get('Content-Type'));
-    
+
     const { correo, contraseña } = req.body;
     const clientIp = req.ip || req.connection.remoteAddress;
     const userAgent = req.get('user-agent') || 'unknown';
 
     console.log('[LOGIN] Intento de login:', correo);
 
-    // Validaciones
     if (!correo || !contraseña) {
-      console.log('[LOGIN] Campos vacíos');
       await logger.logFailedAccess(
         correo || 'unknown',
-        'Campos vacíos',
+        'Campos vacios',
         clientIp,
         userAgent
       );
-      return res.render('login', {
+
+      return res.status(400).render('login', {
         error: 'Correo y contraseña son requeridos.',
+        registered: false,
       });
     }
 
-    console.log('[LOGIN] Buscando usuario:', correo);
-    // Buscar usuario
     const userResult = await pool.query(
       'SELECT id, nombre, correo, contrasena_hash, rol FROM users WHERE correo = $1',
       [correo]
     );
 
     if (userResult.rows.length === 0) {
-      console.log('[LOGIN] Usuario no encontrado:', correo);
       await logger.logFailedAccess(
         correo,
         'Usuario no encontrado',
         clientIp,
         userAgent
       );
-      return res.render('login', {
-        error: 'Correo o contraseña inválidos.',
+
+      return res.status(401).render('login', {
+        error: 'Correo o contraseña invalidos.',
+        registered: false,
       });
     }
 
     const user = userResult.rows[0];
-    console.log('[LOGIN] Usuario encontrado, verificando contraseña');
-
-    // Verificar contraseña
     const passwordMatch = await bcrypt.compare(contraseña, user.contrasena_hash);
 
     if (!passwordMatch) {
-      console.log('[LOGIN] Contraseña incorrecta para:', correo);
       await logger.logFailedAccess(
         correo,
         'Contraseña incorrecta',
         clientIp,
         userAgent
       );
-      return res.render('login', {
-        error: 'Correo o contraseña inválidos.',
+
+      return res.status(401).render('login', {
+        error: 'Correo o contraseña invalidos.',
+        registered: false,
       });
     }
 
-    console.log('[LOGIN] Contraseña correcta, regenerando sesión');
-
-    // Regenerar sesión
     req.session.regenerate((regenerateErr) => {
       if (regenerateErr) {
-        console.error('[LOGIN] Error al regenerar sesión:', regenerateErr);
-        return res.render('login', {
-          error: 'Error al crear sesión. Intenta de nuevo.',
+        console.error('[LOGIN] Error al regenerar sesion:', regenerateErr);
+        return res.status(500).render('login', {
+          error: 'Error al crear sesion. Intenta de nuevo.',
+          registered: false,
         });
       }
 
-      console.log('[LOGIN] Sesión regenerada');
-
-      // Asignar datos del usuario
       req.session.user = {
         id: user.id,
         nombre: user.nombre,
@@ -148,37 +136,27 @@ exports.login = async (req, res) => {
         rol: user.rol,
       };
 
-      console.log('[LOGIN] Datos de usuario asignados');
-      console.log('[LOGIN] req.session COMPLETO ANTES DE GUARDAR:', JSON.stringify(req.session, null, 2));
-      console.log('[LOGIN] req.sessionID:', req.sessionID);
-
-      // Guardar sesión EXPLÍCITAMENTE antes de cualquier operación
       req.session.save((saveErr) => {
         if (saveErr) {
-          console.error('[LOGIN] Error al guardar sesión:', saveErr);
-          return res.status(500).json({
-            success: false,
-            error: 'Error al crear sesión. Intenta de nuevo.',
+          console.error('[LOGIN] Error al guardar sesion:', saveErr);
+          return res.status(500).render('login', {
+            error: 'Error al crear sesion. Intenta de nuevo.',
+            registered: false,
           });
         }
 
-        console.log('[LOGIN] Sesión guardada en express-session');
-        console.log('[LOGIN] req.session COMPLETO DESPUÉS DE GUARDAR:', JSON.stringify(req.session, null, 2));
-
-        // Guardar en tabla de sesiones activas
         const sessionId = req.sessionID;
+
         (async () => {
           try {
             await pool.query(
               'INSERT INTO active_sessions (usuario_id, session_id, ip_origen, user_agent, activa) VALUES ($1, $2, $3, $4, $5)',
               [user.id, sessionId, clientIp, userAgent, true]
             );
-            console.log('[LOGIN] Sesión activa guardada');
           } catch (err) {
-            console.error('[LOGIN] Error al guardar sesión activa:', err);
+            console.error('[LOGIN] Error al guardar sesion activa:', err);
           }
 
-          console.log('[LOGIN] Registrando acceso correcto');
           await logger.logSuccessfulAccess(
             user.id,
             correo,
@@ -188,23 +166,23 @@ exports.login = async (req, res) => {
             userAgent
           );
 
-          console.log('[LOGIN] Respondiendo con JSON para que cliente maneje el redirect');
-          // Devolver JSON con la ruta a la que redirigir
-          // El cliente hará el redirect con JavaScript DESPUÉS de recibir la cookie
-          res.json({
-            success: true,
-            redirect: user.rol === 'admin' ? '/admin/panel' : '/user/panel',
-            message: `Bienvenido ${user.nombre}`,
+          const redirectPath = user.rol === 'admin' ? '/admin/panel' : '/user/panel';
+          console.log('[LOGIN] Redirigiendo a:', redirectPath);
+          res.redirect(redirectPath);
+        })().catch((err) => {
+          console.error('[LOGIN] Error posterior al guardado de sesion:', err);
+          res.status(500).render('login', {
+            error: 'Error al iniciar sesion. Intenta de nuevo.',
+            registered: false,
           });
-        })();
+        });
       });
     });
-
   } catch (error) {
     console.error('[LOGIN] Error en login:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Error al iniciar sesión. Intenta de nuevo.',
+    res.status(500).render('login', {
+      error: 'Error al iniciar sesion. Intenta de nuevo.',
+      registered: false,
     });
   }
 };
@@ -218,24 +196,21 @@ exports.logout = async (req, res) => {
       const { id, correo, rol } = req.session.user;
       const sessionId = req.sessionID;
 
-      // Registrar cierre de sesión
       await logger.logLogout(id, correo, rol, sessionId, clientIp, userAgent);
 
-      // Marcar sesión como inactiva
       try {
         await pool.query(
           'UPDATE active_sessions SET activa = $1 WHERE session_id = $2',
           [false, sessionId]
         );
       } catch (err) {
-        console.error('Error al marcar sesión inactiva:', err);
+        console.error('Error al marcar sesion inactiva:', err);
       }
     }
 
-    // Destruir sesión
     req.session.destroy((err) => {
       if (err) {
-        console.error('Error al destruir sesión:', err);
+        console.error('Error al destruir sesion:', err);
       }
       res.redirect('/');
     });
