@@ -1,6 +1,6 @@
 const express = require('express');
 const session = require('express-session');
-const MySQLStore = require('express-mysql-session')(session);
+const pgSession = require('connect-pg-simple')(session);
 const helmet = require('helmet');
 require('dotenv').config();
 
@@ -28,10 +28,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 // Sesiones
-const sessionStore = new MySQLStore({
-  expiration: 24 * 60 * 60 * 1000, // 24 horas
-  createDatabaseTable: true,
-}, pool);
+const sessionStore = new pgSession({
+  pool: pool,
+  tableName: 'session',
+});
 
 app.use(session({
   store: sessionStore,

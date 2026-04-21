@@ -52,7 +52,7 @@ git push -u origin main
 3. Completa:
    - **Name:** `examen-u3-db`
    - **Database:** `examen_u3`
-   - **User:** `postgres`
+   - **User:** `postgres1`
    - **Region:** elige la más cercana a ti
    - **PostgreSQL Version:** 12 o superior
 4. Click "Create Database"
@@ -74,13 +74,27 @@ Una vez lista, verás en la página:
 
 ### 2.4 Ejecutar schema.sql en la BD remota
 
-1. En la página de la BD, busca "Connect"
-2. Click en "Browser" (abre pgAdmin web)
-3. Copia TODO el contenido de tu archivo `schema.sql`
-4. Pégalo en el Query Editor
-5. Ejecuta (Ctrl+Enter o botón Run)
+**Opción A: Usando PowerShell (Recomendado - más fácil)**
 
-Verás mensajes como:
+1. En la página de tu PostgreSQL en Render, click en "Connect"
+2. En la tab "External", copia la URL completa (comienza con `postgresql://`)
+3. Desde PowerShell, navega a tu carpeta del proyecto:
+
+```bash
+cd "c:\Users\andri\OneDrive\Documentos\Escuela\Desarrollo web\Examen U3"
+```
+
+4. Ejecuta el schema:
+
+```bash
+psql "postgresql://postgres1:PASSWORD@HOST:5432/examen_u3" -f schema.sql
+```
+
+Reemplaza:
+- `PASSWORD` → La contraseña que genera Render
+- `HOST` → El host que ves en Render (ej: `dpg-xxxxx.render.com`)
+
+5. Verás mensajes como:
 ```
 CREATE TABLE
 CREATE TABLE
@@ -89,6 +103,12 @@ CREATE INDEX
 ```
 
 **✅ Listo:** La BD remota ya tiene todas las tablas.
+
+**Nota:** Si no tienes `psql`, primero instala PostgreSQL Client:
+```bash
+choco install postgresql
+```
+O descárgalo desde: https://www.postgresql.org/download/windows/
 
 ## FASE 3: CREAR WEB SERVICE EN RENDER
 
@@ -120,22 +140,25 @@ Scroll down → "Environment"
 Agrega estas variables exactamente (copia los valores de Render):
 
 ```
-DB_HOST=dpg-xxxxx.render.com
+DB_HOST=dpg-d7jcovosfn5c738o4f9g-a.virginia-postgres.render.com
 DB_PORT=5432
-DB_NAME=examen_u3
-DB_USER=postgres
-DB_PASSWORD=<copia de Render>
-SESSION_SECRET=asdfghjkl1234567890qwertyuiopzxcvbnm123456789
-PORT=10000
+DB_NAME=examen_u3_5z93
+DB_USER=postgres1
+DB_PASSWORD=nGsxsJk45ParLsFb5enJWDRAiKeR5Jfg
+SESSION_SECRET=<GENERA_UN_NUEVO>
 NODE_ENV=production
 ```
 
 **Dónde obtener cada valor:**
 
-- **DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD:** De la página de tu PostgreSQL en Render (sección "Connect")
-- **SESSION_SECRET:** Algo largo y aleatorio (ya está en tu `.env` local, cópialo o genera otro)
-- **PORT:** Render asigna dinámicamente, pero escribe cualquier puerto (ej. 10000)
+- **DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD:** De la página de tu PostgreSQL en Render (sección "Connect" → tab "External")
+- **SESSION_SECRET:** Genera uno nuevo con: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
 - **NODE_ENV:** Siempre `production` en Render
+
+**⚠️ IMPORTANTE:** 
+- Railway usa **PostgreSQL**, NO MariaDB
+- El PORT lo asigna Railway automáticamente, no lo configurar manualmente
+- Las credenciales de BD las obtuviste cuando ejecutaste el schema.sql
 
 ### 3.4 Crear el servicio
 
@@ -238,11 +261,16 @@ Si ves error:
 
 **Solución:**
 1. Ve a tu PostgreSQL en Render
-2. Click "Connect" → "Browser"
-3. Copia TODO de schema.sql
-4. Pega en Query Editor
-5. Ejecuta
-6. Reinicia el Web Service (botón "Manual Deploy" en Render)
+2. Click "Connect" → Tab "External"
+3. Copia la URL `postgresql://...`
+4. En PowerShell, ejecuta:
+```bash
+psql "postgresql://postgres1:PASSWORD@HOST:5432/examen_u3" -f schema.sql
+```
+5. Una vez ejecutado, reinicia el Web Service:
+   - Ve a tu Web Service en Render
+   - Click "Manual Deploy"
+   - Click "Deploy latest"
 
 ### Página en blanco o 502 Bad Gateway
 

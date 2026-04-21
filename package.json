@@ -1,7 +1,7 @@
 {
   "name": "examen-u3-autenticacion",
   "version": "1.0.0",
-  "description": "Proyecto académico de autenticación, sesiones y bitácoras con Node.js, Express y MariaDB",
+  "description": "Proyecto académico de autenticación, sesiones y bitácoras con Node.js, Express y PostgreSQL",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
@@ -11,7 +11,7 @@
   "keywords": [
     "node",
     "express",
-    "mariadb",
+    "postgresql",
     "authentication",
     "sessions"
   ],
@@ -19,13 +19,13 @@
   "license": "MIT",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "connect-pg-simple": "^9.0.1",
     "dotenv": "^16.3.1",
     "ejs": "^3.1.9",
     "express": "^4.18.2",
-    "express-mysql-session": "^3.0.3",
     "express-session": "^1.17.3",
     "helmet": "^7.1.0",
-    "mysql2": "^3.6.5",
+    "pg": "^8.11.3",
     "pdfkit": "^0.18.0",
     "validator": "^13.11.0"
   },

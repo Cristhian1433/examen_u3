@@ -1,6 +1,6 @@
 -- Tabla de usuarios
 CREATE TABLE IF NOT EXISTS users (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
   correo VARCHAR(100) UNIQUE NOT NULL,
   contraseña_hash VARCHAR(255) NOT NULL,
@@ -10,20 +10,20 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Tabla de sesiones activas
 CREATE TABLE IF NOT EXISTS active_sessions (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   usuario_id INT NOT NULL,
   session_id VARCHAR(255) UNIQUE NOT NULL,
   ip_origen VARCHAR(45),
   user_agent TEXT,
   activa BOOLEAN DEFAULT TRUE,
   creada_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  actualizada_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  actualizada_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (usuario_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Tabla de accesos correctos
 CREATE TABLE IF NOT EXISTS access_logs (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   usuario_id INT NOT NULL,
   correo VARCHAR(100) NOT NULL,
   rol VARCHAR(20) NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS access_logs (
 
 -- Tabla de accesos fallidos
 CREATE TABLE IF NOT EXISTS failed_access_logs (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   correo_intentado VARCHAR(100),
   motivo VARCHAR(255),
   ip_origen VARCHAR(45),
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS failed_access_logs (
 
 -- Tabla de cierres de sesión
 CREATE TABLE IF NOT EXISTS logout_logs (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   usuario_id INT NOT NULL,
   correo VARCHAR(100) NOT NULL,
   rol VARCHAR(20) NOT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS logout_logs (
 );
 
 -- Crear índices para mejor rendimiento
-CREATE INDEX idx_users_correo ON users(correo);
-CREATE INDEX idx_access_logs_fecha ON access_logs(fecha);
-CREATE INDEX idx_failed_logs_fecha ON failed_access_logs(fecha);
-CREATE INDEX idx_logout_logs_fecha ON logout_logs(fecha);
+CREATE INDEX IF NOT EXISTS idx_users_correo ON users(correo);
+CREATE INDEX IF NOT EXISTS idx_access_logs_fecha ON access_logs(fecha);
+CREATE INDEX IF NOT EXISTS idx_failed_logs_fecha ON failed_access_logs(fecha);
+CREATE INDEX IF NOT EXISTS idx_logout_logs_fecha ON logout_logs(fecha);
