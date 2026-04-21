@@ -123,65 +123,75 @@ exports.login = async (req, res) => {
       });
     }
 
-    console.log('[LOGIN] Contraseña correcta, creando sesión');
+    console.log('[LOGIN] Contraseña correcta, regenerando sesión');
 
-    // Crear sesión
-    req.session.user = {
-      id: user.id,
-      nombre: user.nombre,
-      correo: user.correo,
-      rol: user.rol,
-    };
-
-    console.log('[LOGIN] Datos de usuario asignados a sesión:', req.session.user);
-    
-    // Tocar la sesión para marcarla como modificada
-    req.session.touch();
-    console.log('[LOGIN] Sesión marcada como modificada');
-
-    // Guardar en tabla de sesiones activas
-    const sessionId = req.sessionID;
-    try {
-      await pool.query(
-        'INSERT INTO active_sessions (usuario_id, session_id, ip_origen, user_agent, activa) VALUES ($1, $2, $3, $4, $5)',
-        [user.id, sessionId, clientIp, userAgent, true]
-      );
-      console.log('[LOGIN] Sesión activa guardada en BD');
-    } catch (err) {
-      console.error('[LOGIN] Error al guardar sesión activa:', err);
-    }
-
-    console.log('[LOGIN] Registrando acceso correcto');
-    // Registrar acceso correcto
-    await logger.logSuccessfulAccess(
-      user.id,
-      correo,
-      user.rol,
-      sessionId,
-      clientIp,
-      userAgent
-    );
-
-    console.log('[LOGIN] Guardando sesión en BD');
-    // Guardar la sesión en BD ANTES de redirigir
-    req.session.save((err) => {
-      if (err) {
-        console.error('[LOGIN] Error fatal al guardar sesión:', err);
+    // Regenerar sesión CORRECTAMENTE
+    req.session.regenerate((regenerateErr) => {
+      if (regenerateErr) {
+        console.error('[LOGIN] Error al regenerar sesión:', regenerateErr);
         return res.render('login', {
           error: 'Error al crear sesión. Intenta de nuevo.',
         });
       }
 
-      console.log('[LOGIN] Sesión guardada en BD correctamente');
-      console.log('[LOGIN] Session ID:', sessionId);
-      console.log('[LOGIN] Redirigiendo a rol:', user.rol);
+      console.log('[LOGIN] Sesión regenerada');
 
-      // Redirigir según rol
-      if (user.rol === 'admin') {
-        res.redirect('/admin/panel');
-      } else {
-        res.redirect('/user/panel');
-      }
+      // Ahora asignar datos DENTRO del callback de regenerate
+      req.session.user = {
+        id: user.id,
+        nombre: user.nombre,
+        correo: user.correo,
+        rol: user.rol,
+      };
+
+      console.log('[LOGIN] Datos de usuario asignados a sesión:', req.session.user);
+
+      // Guardar en tabla de sesiones activas
+      const sessionId = req.sessionID;
+      (async () => {
+        try {
+          await pool.query(
+            'INSERT INTO active_sessions (usuario_id, session_id, ip_origen, user_agent, activa) VALUES ($1, $2, $3, $4, $5)',
+            [user.id, sessionId, clientIp, userAgent, true]
+          );
+          console.log('[LOGIN] Sesión activa guardada en BD');
+        } catch (err) {
+          console.error('[LOGIN] Error al guardar sesión activa:', err);
+        }
+
+        console.log('[LOGIN] Registrando acceso correcto');
+        // Registrar acceso correcto
+        await logger.logSuccessfulAccess(
+          user.id,
+          correo,
+          user.rol,
+          sessionId,
+          clientIp,
+          userAgent
+        );
+
+        console.log('[LOGIN] Guardando sesión en BD');
+        // Guardar la sesión en BD DENTRO del callback de regenerate
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error('[LOGIN] Error fatal al guardar sesión:', saveErr);
+            return res.render('login', {
+              error: 'Error al crear sesión. Intenta de nuevo.',
+            });
+          }
+
+          console.log('[LOGIN] Sesión guardada en BD correctamente');
+          console.log('[LOGIN] Session ID:', sessionId);
+          console.log('[LOGIN] Redirigiendo a rol:', user.rol);
+
+          // Redirigir según rol
+          if (user.rol === 'admin') {
+            res.redirect('/admin/panel');
+          } else {
+            res.redirect('/user/panel');
+          }
+        });
+      })();
     });
 
   } catch (error) {
