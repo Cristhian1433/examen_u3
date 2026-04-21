@@ -6,12 +6,12 @@ exports.getPanel = async (req, res) => {
     const sessionId = req.sessionID;
 
     // Obtener información de sesión activa
-    const [sessionResult] = await pool.query(
-      'SELECT * FROM active_sessions WHERE session_id = ?',
+    const sessionResult = await pool.query(
+      'SELECT * FROM active_sessions WHERE session_id = $1',
       [sessionId]
     );
 
-    const sessionInfo = sessionResult[0] || null;
+    const sessionInfo = sessionResult.rows[0] || null;
 
     res.render('user-panel', {
       user,

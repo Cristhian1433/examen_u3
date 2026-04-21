@@ -33,12 +33,12 @@ exports.register = async (req, res) => {
     }
 
     // Verificar si el correo ya existe
-    const [userExists] = await pool.query(
-      'SELECT id FROM users WHERE correo = ?',
+    const userExists = await pool.query(
+      'SELECT id FROM users WHERE correo = $1',
       [correo]
     );
 
-    if (userExists.length > 0) {
+    if (userExists.rows.length > 0) {
       return res.render('register', {
         error: 'El correo ya está registrado.',
       });
@@ -48,8 +48,8 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(contraseña, 10);
 
     // Insertar usuario
-    const [result] = await pool.query(
-      'INSERT INTO users (nombre, correo, contraseña_hash, rol) VALUES (?, ?, ?, ?)',
+    const result = await pool.query(
+      'INSERT INTO users (nombre, correo, contraseña_hash, rol) VALUES ($1, $2, $3, $4)',
       [nombre, correo, hashedPassword, rol]
     );
 
@@ -82,12 +82,12 @@ exports.login = async (req, res) => {
     }
 
     // Buscar usuario
-    const [userResult] = await pool.query(
-      'SELECT id, nombre, correo, contraseña_hash, rol FROM users WHERE correo = ?',
+    const userResult = await pool.query(
+      'SELECT id, nombre, correo, contraseña_hash, rol FROM users WHERE correo = $1',
       [correo]
     );
 
-    if (userResult.length === 0) {
+    if (userResult.rows.length === 0) {
       await logger.logFailedAccess(
         correo,
         'Usuario no encontrado',
@@ -99,7 +99,7 @@ exports.login = async (req, res) => {
       });
     }
 
-    const user = userResult[0];
+    const user = userResult.rows[0];
 
     // Verificar contraseña
     const passwordMatch = await bcrypt.compare(contraseña, user.contraseña_hash);
@@ -137,8 +137,8 @@ exports.login = async (req, res) => {
       const sessionId = req.sessionID;
       try {
         await pool.query(
-          'INSERT INTO active_sessions (usuario_id, session_id, ip_origen, user_agent, activa) VALUES (?, ?, ?, ?, ?)',
-          [user.id, sessionId, clientIp, userAgent, 1]
+          'INSERT INTO active_sessions (usuario_id, session_id, ip_origen, user_agent, activa) VALUES ($1, $2, $3, $4, $5)',
+          [user.id, sessionId, clientIp, userAgent, true]
         );
       } catch (err) {
         console.error('Error al guardar sesión activa:', err);
@@ -184,8 +184,8 @@ exports.logout = async (req, res) => {
       // Marcar sesión como inactiva
       try {
         await pool.query(
-          'UPDATE active_sessions SET activa = ? WHERE session_id = ?',
-          [0, sessionId]
+          'UPDATE active_sessions SET activa = $1 WHERE session_id = $2',
+          [false, sessionId]
         );
       } catch (err) {
         console.error('Error al marcar sesión inactiva:', err);

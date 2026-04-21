@@ -6,44 +6,48 @@ const path = require('path');
 exports.getAuditReport = async (req, res) => {
   try {
     // Obtener estadísticas de accesos correctos
-    const [accessLogs] = await pool.query(
+    const accessLogsResult = await pool.query(
       'SELECT COUNT(*) as total FROM access_logs'
     );
-    const totalAccessos = accessLogs[0]?.total || 0;
+    const totalAccessos = accessLogsResult.rows[0]?.total || 0;
 
     // Obtener estadísticas de accesos fallidos
-    const [failedLogs] = await pool.query(
+    const failedLogsResult = await pool.query(
       'SELECT COUNT(*) as total FROM failed_access_logs'
     );
-    const totalFallidos = failedLogs[0]?.total || 0;
+    const totalFallidos = failedLogsResult.rows[0]?.total || 0;
 
     // Obtener estadísticas de cierres de sesión
-    const [logoutLogs] = await pool.query(
+    const logoutLogsResult = await pool.query(
       'SELECT COUNT(*) as total FROM logout_logs'
     );
-    const totalCierres = logoutLogs[0]?.total || 0;
+    const totalCierres = logoutLogsResult.rows[0]?.total || 0;
 
     // Obtener top 10 usuarios más activos (accesos correctos)
-    const [topUsers] = await pool.query(
+    const topUsersResult = await pool.query(
       `SELECT correo, COUNT(*) as accesos 
        FROM access_logs 
        GROUP BY correo 
        ORDER BY accesos DESC 
        LIMIT 10`
     );
+    const topUsers = topUsersResult.rows;
 
     // Obtener últimos 20 registros de cada bitácora
-    const [recentAccessLogs] = await pool.query(
+    const recentAccessLogsResult = await pool.query(
       'SELECT * FROM access_logs ORDER BY fecha DESC LIMIT 20'
     );
+    const recentAccessLogs = recentAccessLogsResult.rows;
 
-    const [recentFailedLogs] = await pool.query(
+    const recentFailedLogsResult = await pool.query(
       'SELECT * FROM failed_access_logs ORDER BY fecha DESC LIMIT 20'
     );
+    const recentFailedLogs = recentFailedLogsResult.rows;
 
-    const [recentLogoutLogs] = await pool.query(
+    const recentLogoutLogsResult = await pool.query(
       'SELECT * FROM logout_logs ORDER BY fecha DESC LIMIT 20'
     );
+    const recentLogoutLogs = recentLogoutLogsResult.rows;
 
     res.render('audit-report', {
       user: req.session.user,
@@ -71,32 +75,34 @@ exports.getAuditReport = async (req, res) => {
 exports.downloadPDF = async (req, res) => {
   try {
     // Obtener todas las estadísticas
-    const [accessLogs] = await pool.query(
+    const accessLogsResult = await pool.query(
       'SELECT COUNT(*) as total FROM access_logs'
     );
-    const totalAccessos = accessLogs[0]?.total || 0;
+    const totalAccessos = accessLogsResult.rows[0]?.total || 0;
 
-    const [failedLogs] = await pool.query(
+    const failedLogsResult = await pool.query(
       'SELECT COUNT(*) as total FROM failed_access_logs'
     );
-    const totalFallidos = failedLogs[0]?.total || 0;
+    const totalFallidos = failedLogsResult.rows[0]?.total || 0;
 
-    const [logoutLogs] = await pool.query(
+    const logoutLogsResult = await pool.query(
       'SELECT COUNT(*) as total FROM logout_logs'
     );
-    const totalCierres = logoutLogs[0]?.total || 0;
+    const totalCierres = logoutLogsResult.rows[0]?.total || 0;
 
-    const [topUsers] = await pool.query(
+    const topUsersResult = await pool.query(
       `SELECT correo, COUNT(*) as accesos 
        FROM access_logs 
        GROUP BY correo 
        ORDER BY accesos DESC 
        LIMIT 10`
     );
+    const topUsers = topUsersResult.rows;
 
-    const [recentAccessLogs] = await pool.query(
+    const recentAccessLogsResult = await pool.query(
       'SELECT * FROM access_logs ORDER BY fecha DESC LIMIT 50'
     );
+    const recentAccessLogs = recentAccessLogsResult.rows;
 
     // Crear documento PDF
     const doc = new PDFDocument({

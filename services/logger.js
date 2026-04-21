@@ -3,7 +3,7 @@ const pool = require('../db');
 async function logSuccessfulAccess(userId, correo, rol, sessionId, ipOrigen, userAgent) {
   try {
     await pool.query(
-      'INSERT INTO access_logs (usuario_id, correo, rol, session_id, ip_origen, user_agent) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT INTO access_logs (usuario_id, correo, rol, session_id, ip_origen, user_agent) VALUES ($1, $2, $3, $4, $5, $6)',
       [userId, correo, rol, sessionId, ipOrigen, userAgent]
     );
   } catch (error) {
@@ -14,7 +14,7 @@ async function logSuccessfulAccess(userId, correo, rol, sessionId, ipOrigen, use
 async function logFailedAccess(correoIntentado, motivo, ipOrigen, userAgent) {
   try {
     await pool.query(
-      'INSERT INTO failed_access_logs (correo_intentado, motivo, ip_origen, user_agent) VALUES (?, ?, ?, ?)',
+      'INSERT INTO failed_access_logs (correo_intentado, motivo, ip_origen, user_agent) VALUES ($1, $2, $3, $4)',
       [correoIntentado, motivo, ipOrigen, userAgent]
     );
   } catch (error) {
@@ -25,7 +25,7 @@ async function logFailedAccess(correoIntentado, motivo, ipOrigen, userAgent) {
 async function logLogout(userId, correo, rol, sessionId, ipOrigen, userAgent) {
   try {
     await pool.query(
-      'INSERT INTO logout_logs (usuario_id, correo, rol, session_id, ip_origen, user_agent) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT INTO logout_logs (usuario_id, correo, rol, session_id, ip_origen, user_agent) VALUES ($1, $2, $3, $4, $5, $6)',
       [userId, correo, rol, sessionId, ipOrigen, userAgent]
     );
   } catch (error) {

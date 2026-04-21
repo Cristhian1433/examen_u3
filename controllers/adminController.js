@@ -19,9 +19,10 @@ exports.getPanel = async (req, res) => {
 
 exports.getAccessLogs = async (req, res) => {
   try {
-    const [logs] = await pool.query(
+    const result = await pool.query(
       'SELECT * FROM access_logs ORDER BY fecha DESC LIMIT 100'
     );
+    const logs = result.rows;
 
     res.render('admin-panel', {
       user: req.session.user,
@@ -40,9 +41,10 @@ exports.getAccessLogs = async (req, res) => {
 
 exports.getFailedAccessLogs = async (req, res) => {
   try {
-    const [logs] = await pool.query(
+    const result = await pool.query(
       'SELECT * FROM failed_access_logs ORDER BY fecha DESC LIMIT 100'
     );
+    const logs = result.rows;
 
     res.render('admin-panel', {
       user: req.session.user,
@@ -61,9 +63,10 @@ exports.getFailedAccessLogs = async (req, res) => {
 
 exports.getLogoutLogs = async (req, res) => {
   try {
-    const [logs] = await pool.query(
+    const result = await pool.query(
       'SELECT * FROM logout_logs ORDER BY fecha DESC LIMIT 100'
     );
+    const logs = result.rows;
 
     res.render('admin-panel', {
       user: req.session.user,
