@@ -146,39 +146,48 @@ exports.login = async (req, res) => {
 
       console.log('[LOGIN] Datos de usuario asignados');
 
-      // Guardar en tabla de sesiones activas
-      const sessionId = req.sessionID;
-      (async () => {
-        try {
-          await pool.query(
-            'INSERT INTO active_sessions (usuario_id, session_id, ip_origen, user_agent, activa) VALUES ($1, $2, $3, $4, $5)',
-            [user.id, sessionId, clientIp, userAgent, true]
+      // Guardar sesión EXPLÍCITAMENTE antes de cualquier operación
+      req.session.save((saveErr) => {
+        if (saveErr) {
+          console.error('[LOGIN] Error al guardar sesión:', saveErr);
+          return res.render('login', {
+            error: 'Error al crear sesión. Intenta de nuevo.',
+          });
+        }
+
+        console.log('[LOGIN] Sesión guardada en express-session');
+
+        // Guardar en tabla de sesiones activas
+        const sessionId = req.sessionID;
+        (async () => {
+          try {
+            await pool.query(
+              'INSERT INTO active_sessions (usuario_id, session_id, ip_origen, user_agent, activa) VALUES ($1, $2, $3, $4, $5)',
+              [user.id, sessionId, clientIp, userAgent, true]
+            );
+            console.log('[LOGIN] Sesión activa guardada');
+          } catch (err) {
+            console.error('[LOGIN] Error al guardar sesión activa:', err);
+          }
+
+          console.log('[LOGIN] Registrando acceso correcto');
+          await logger.logSuccessfulAccess(
+            user.id,
+            correo,
+            user.rol,
+            sessionId,
+            clientIp,
+            userAgent
           );
-          console.log('[LOGIN] Sesión activa guardada');
-        } catch (err) {
-          console.error('[LOGIN] Error al guardar sesión activa:', err);
-        }
 
-        console.log('[LOGIN] Registrando acceso correcto');
-        await logger.logSuccessfulAccess(
-          user.id,
-          correo,
-          user.rol,
-          sessionId,
-          clientIp,
-          userAgent
-        );
-
-        console.log('[LOGIN] Guardando sesión');
-        // NO llamar a save() - dejar que express-session maneje automáticamente
-        // Simplemente redirigir
-        console.log('[LOGIN] Redirigiendo a rol:', user.rol);
-        if (user.rol === 'admin') {
-          res.redirect('/admin/panel');
-        } else {
-          res.redirect('/user/panel');
-        }
-      })();
+          console.log('[LOGIN] Redirigiendo a rol:', user.rol);
+          if (user.rol === 'admin') {
+            res.redirect('/admin/panel');
+          } else {
+            res.redirect('/user/panel');
+          }
+        })();
+      });
     });
 
   } catch (error) {
