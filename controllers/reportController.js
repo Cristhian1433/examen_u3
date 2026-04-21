@@ -9,19 +9,19 @@ exports.getAuditReport = async (req, res) => {
     const accessLogsResult = await pool.query(
       'SELECT COUNT(*) as total FROM access_logs'
     );
-    const totalAccessos = accessLogsResult.rows[0]?.total || 0;
+    const totalAccessos = Number(accessLogsResult.rows[0]?.total || 0);
 
     // Obtener estadísticas de accesos fallidos
     const failedLogsResult = await pool.query(
       'SELECT COUNT(*) as total FROM failed_access_logs'
     );
-    const totalFallidos = failedLogsResult.rows[0]?.total || 0;
+    const totalFallidos = Number(failedLogsResult.rows[0]?.total || 0);
 
     // Obtener estadísticas de cierres de sesión
     const logoutLogsResult = await pool.query(
       'SELECT COUNT(*) as total FROM logout_logs'
     );
-    const totalCierres = logoutLogsResult.rows[0]?.total || 0;
+    const totalCierres = Number(logoutLogsResult.rows[0]?.total || 0);
 
     // Obtener top 10 usuarios más activos (accesos correctos)
     const topUsersResult = await pool.query(
@@ -78,17 +78,17 @@ exports.downloadPDF = async (req, res) => {
     const accessLogsResult = await pool.query(
       'SELECT COUNT(*) as total FROM access_logs'
     );
-    const totalAccessos = accessLogsResult.rows[0]?.total || 0;
+    const totalAccessos = Number(accessLogsResult.rows[0]?.total || 0);
 
     const failedLogsResult = await pool.query(
       'SELECT COUNT(*) as total FROM failed_access_logs'
     );
-    const totalFallidos = failedLogsResult.rows[0]?.total || 0;
+    const totalFallidos = Number(failedLogsResult.rows[0]?.total || 0);
 
     const logoutLogsResult = await pool.query(
       'SELECT COUNT(*) as total FROM logout_logs'
     );
-    const totalCierres = logoutLogsResult.rows[0]?.total || 0;
+    const totalCierres = Number(logoutLogsResult.rows[0]?.total || 0);
 
     const topUsersResult = await pool.query(
       `SELECT correo, COUNT(*) as accesos 
