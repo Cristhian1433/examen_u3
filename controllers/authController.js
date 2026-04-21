@@ -49,7 +49,7 @@ exports.register = async (req, res) => {
 
     // Insertar usuario
     const result = await pool.query(
-      'INSERT INTO users (nombre, correo, contraseña_hash, rol) VALUES ($1, $2, $3, $4)',
+      'INSERT INTO users (nombre, correo, contrasena_hash, rol) VALUES ($1, $2, $3, $4)',
       [nombre, correo, hashedPassword, rol]
     );
 
@@ -83,7 +83,7 @@ exports.login = async (req, res) => {
 
     // Buscar usuario
     const userResult = await pool.query(
-      'SELECT id, nombre, correo, contraseña_hash, rol FROM users WHERE correo = $1',
+      'SELECT id, nombre, correo, contrasena_hash, rol FROM users WHERE correo = $1',
       [correo]
     );
 
@@ -102,7 +102,7 @@ exports.login = async (req, res) => {
     const user = userResult.rows[0];
 
     // Verificar contraseña
-    const passwordMatch = await bcrypt.compare(contraseña, user.contraseña_hash);
+    const passwordMatch = await bcrypt.compare(contraseña, user.contrasena_hash);
 
     if (!passwordMatch) {
       await logger.logFailedAccess(

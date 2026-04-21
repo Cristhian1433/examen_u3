@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
   correo VARCHAR(100) UNIQUE NOT NULL,
-  contraseña_hash VARCHAR(255) NOT NULL,
+  contrasena_hash VARCHAR(255) NOT NULL,
   rol VARCHAR(20) NOT NULL CHECK (rol IN ('user', 'admin')),
   creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
