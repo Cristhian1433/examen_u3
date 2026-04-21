@@ -16,6 +16,7 @@ router.get('/login', isNotAuthenticated, (req, res) => {
   res.render('login', {
     error: null,
     registered: req.query.registered === 'true',
+    loggedOut: req.query.loggedOut === 'true',
   });
 });
 

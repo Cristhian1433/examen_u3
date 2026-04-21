@@ -23,6 +23,12 @@
         </div>
       <% } %>
 
+      <% if (loggedOut) { %>
+        <div class="alert alert-success">
+          Cerrando sesion.
+        </div>
+      <% } %>
+
       <form method="POST" action="/auth/login" class="form">
         <div class="form-group input-with-icon">
           <span class="input-icon">👤</span>

@@ -21,6 +21,12 @@
     </nav>
 
     <main>
+      <% if (loginSuccess) { %>
+        <div class="alert alert-success">
+          Acceso concedido, bienvenido.
+        </div>
+      <% } %>
+
       <section class="user-overview">
         <h2>Mi Información</h2>
 

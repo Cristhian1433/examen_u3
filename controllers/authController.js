@@ -166,7 +166,9 @@ exports.login = async (req, res) => {
             userAgent
           );
 
-          const redirectPath = user.rol === 'admin' ? '/admin/panel' : '/user/panel';
+          const redirectPath = user.rol === 'admin'
+            ? '/admin/panel?loginSuccess=true'
+            : '/user/panel?loginSuccess=true';
           console.log('[LOGIN] Redirigiendo a:', redirectPath);
           res.redirect(redirectPath);
         })().catch((err) => {
@@ -212,10 +214,10 @@ exports.logout = async (req, res) => {
       if (err) {
         console.error('Error al destruir sesion:', err);
       }
-      res.redirect('/');
+      res.redirect('/auth/login?loggedOut=true');
     });
   } catch (error) {
     console.error('Error en logout:', error);
-    res.redirect('/');
+    res.redirect('/auth/login?loggedOut=true');
   }
 };

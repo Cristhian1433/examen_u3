@@ -15,6 +15,7 @@ exports.getPanel = async (req, res) => {
     res.render('admin-panel', {
       user,
       sessionID: req.sessionID,
+      loginSuccess: req.query.loginSuccess === 'true',
     });
   } catch (error) {
     console.error('Error en panel admin:', error);

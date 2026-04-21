@@ -23,6 +23,7 @@ exports.getPanel = async (req, res) => {
       user,
       sessionID: req.sessionID,
       sessionInfo,
+      loginSuccess: req.query.loginSuccess === 'true',
     });
   } catch (error) {
     console.error('Error en panel usuario:', error);
