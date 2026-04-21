@@ -68,8 +68,11 @@ exports.login = async (req, res) => {
     const clientIp = req.ip || req.connection.remoteAddress;
     const userAgent = req.get('user-agent') || 'unknown';
 
+    console.log('[LOGIN] Intento de login:', correo);
+
     // Validaciones
     if (!correo || !contraseña) {
+      console.log('[LOGIN] Campos vacíos');
       await logger.logFailedAccess(
         correo || 'unknown',
         'Campos vacíos',
@@ -81,6 +84,7 @@ exports.login = async (req, res) => {
       });
     }
 
+    console.log('[LOGIN] Buscando usuario:', correo);
     // Buscar usuario
     const userResult = await pool.query(
       'SELECT id, nombre, correo, contrasena_hash, rol FROM users WHERE correo = $1',
@@ -88,6 +92,7 @@ exports.login = async (req, res) => {
     );
 
     if (userResult.rows.length === 0) {
+      console.log('[LOGIN] Usuario no encontrado:', correo);
       await logger.logFailedAccess(
         correo,
         'Usuario no encontrado',
@@ -100,11 +105,13 @@ exports.login = async (req, res) => {
     }
 
     const user = userResult.rows[0];
+    console.log('[LOGIN] Usuario encontrado, verificando contraseña');
 
     // Verificar contraseña
     const passwordMatch = await bcrypt.compare(contraseña, user.contrasena_hash);
 
     if (!passwordMatch) {
+      console.log('[LOGIN] Contraseña incorrecta para:', correo);
       await logger.logFailedAccess(
         correo,
         'Contraseña incorrecta',
@@ -116,15 +123,17 @@ exports.login = async (req, res) => {
       });
     }
 
+    console.log('[LOGIN] Contraseña correcta, regenerando sesión');
     // Regenerar sesión
     req.session.regenerate(async (err) => {
       if (err) {
-        console.error('Error al regenerar sesión:', err);
+        console.error('[LOGIN] Error al regenerar sesión:', err);
         return res.render('login', {
           error: 'Error al crear sesión. Intenta de nuevo.',
         });
       }
 
+      console.log('[LOGIN] Sesión regenerada');
       // Guardar datos en sesión
       req.session.user = {
         id: user.id,
@@ -133,6 +142,7 @@ exports.login = async (req, res) => {
         rol: user.rol,
       };
 
+      console.log('[LOGIN] Guardando sesión activa');
       // Guardar en tabla de sesiones activas
       const sessionId = req.sessionID;
       try {
@@ -140,10 +150,12 @@ exports.login = async (req, res) => {
           'INSERT INTO active_sessions (usuario_id, session_id, ip_origen, user_agent, activa) VALUES ($1, $2, $3, $4, $5)',
           [user.id, sessionId, clientIp, userAgent, true]
         );
+        console.log('[LOGIN] Sesión activa guardada');
       } catch (err) {
-        console.error('Error al guardar sesión activa:', err);
+        console.error('[LOGIN] Error al guardar sesión activa:', err);
       }
 
+      console.log('[LOGIN] Registrando acceso correcto');
       // Registrar acceso correcto
       await logger.logSuccessfulAccess(
         user.id,
@@ -154,6 +166,7 @@ exports.login = async (req, res) => {
         userAgent
       );
 
+      console.log('[LOGIN] Redirigiendo usuario rol:', user.rol);
       // Redirigir según rol
       if (user.rol === 'admin') {
         res.redirect('/admin/panel');
@@ -162,7 +175,7 @@ exports.login = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error en login:', error);
+    console.error('[LOGIN] Error en login:', error);
     res.render('login', {
       error: 'Error al iniciar sesión. Intenta de nuevo.',
     });
